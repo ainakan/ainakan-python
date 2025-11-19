@@ -1,6 +1,6 @@
-import frida
+import ainakan
 
-session = frida.attach("Twitter")
+session = ainakan.attach("Twitter")
 script = session.create_script(
     """\
 rpc.exports = {

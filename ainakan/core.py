@@ -38,14 +38,14 @@ if sys.version_info >= (3, 11):
 else:
     from typing_extensions import NotRequired
 
-from . import _frida
+from . import _ainakan
 
 _device_manager = None
 
-_Cancellable = _frida.Cancellable
+_Cancellable = _ainakan.Cancellable
 
 ProcessTarget = Union[int, str]
-Spawn = _frida.Spawn
+Spawn = _ainakan.Spawn
 
 
 @dataclasses.dataclass
@@ -62,7 +62,7 @@ def get_device_manager() -> "DeviceManager":
 
     global _device_manager
     if _device_manager is None:
-        _device_manager = DeviceManager(_frida.DeviceManager())
+        _device_manager = DeviceManager(_ainakan.DeviceManager())
     return _device_manager
 
 
@@ -90,10 +90,10 @@ def cancellable(f: Callable[..., R]) -> Callable[..., R]:
 
 class IOStream:
     """
-    Frida's own implementation of an input/output stream
+    Ainakan's own implementation of an input/output stream
     """
 
-    def __init__(self, impl: _frida.IOStream) -> None:
+    def __init__(self, impl: _ainakan.IOStream) -> None:
         self._impl = impl
 
     def __repr__(self) -> str:
@@ -149,7 +149,7 @@ class IOStream:
 
 
 class PortalMembership:
-    def __init__(self, impl: _frida.PortalMembership) -> None:
+    def __init__(self, impl: _ainakan.PortalMembership) -> None:
         self._impl = impl
 
     @cancellable
@@ -251,7 +251,7 @@ class RPCException(Exception):
 
 
 class Script:
-    def __init__(self, impl: _frida.Script) -> None:
+    def __init__(self, impl: _ainakan.Script) -> None:
         self.exports_sync = ScriptExportsSync(self)
         self.exports_async = ScriptExportsAsync(self)
 
@@ -261,7 +261,7 @@ class Script:
         self._log_handler: Callable[[str, str], None] = self.default_log_handler
 
         self._pending: Dict[
-            int, Callable[[Optional[Any], Optional[Union[RPCException, _frida.InvalidOperationError]]], None]
+            int, Callable[[Optional[Any], Optional[Union[RPCException, _ainakan.InvalidOperationError]]], None]
         ] = {}
         self._next_request_id = 1
         self._cond = threading.Condition()
@@ -445,7 +445,7 @@ class Script:
         loop = asyncio.get_event_loop()
         future: asyncio.Future[Any] = asyncio.Future()
 
-        def on_complete(value: Any, error: Optional[Union[RPCException, _frida.InvalidOperationError]]) -> None:
+        def on_complete(value: Any, error: Optional[Union[RPCException, _ainakan.InvalidOperationError]]) -> None:
             if error is not None:
                 loop.call_soon_threadsafe(future.set_exception, error)
             else:
@@ -464,7 +464,7 @@ class Script:
     def _rpc_request(self, args: Any, data: Optional[bytes] = None) -> Any:
         result = RPCResult()
 
-        def on_complete(value: Any, error: Optional[Union[RPCException, _frida.InvalidOperationError]]) -> None:
+        def on_complete(value: Any, error: Optional[Union[RPCException, _ainakan.InvalidOperationError]]) -> None:
             with self._cond:
                 result.finished = True
                 result.value = value
@@ -499,7 +499,7 @@ class Script:
         return result.value
 
     def _append_pending(
-        self, callback: Callable[[Any, Optional[Union[RPCException, _frida.InvalidOperationError]]], None]
+        self, callback: Callable[[Any, Optional[Union[RPCException, _ainakan.InvalidOperationError]]], None]
     ) -> int:
         with self._cond:
             request_id = self._next_request_id
@@ -508,7 +508,7 @@ class Script:
         return request_id
 
     def _send_rpc_call(self, request_id: int, args: Any, data: Optional[bytes]) -> None:
-        self.post(["frida:rpc", request_id, *args], data)
+        self.post(["ainakan:rpc", request_id, *args], data)
 
     def _on_rpc_message(self, request_id: int, operation: str, params: List[Any], data: Optional[Any]) -> None:
         if operation in ("ok", "error"):
@@ -540,7 +540,7 @@ class Script:
             if next_pending is None:
                 break
 
-            next_pending(None, _frida.InvalidOperationError("script has been destroyed"))
+            next_pending(None, _ainakan.InvalidOperationError("script has been destroyed"))
 
     def _on_message(self, raw_message: str, data: Optional[bytes]) -> None:
         message = json.loads(raw_message)
@@ -551,7 +551,7 @@ class Script:
             level = message["level"]
             text = payload
             self._log_handler(level, text)
-        elif mtype == "send" and isinstance(payload, list) and len(payload) > 0 and payload[0] == "frida:rpc":
+        elif mtype == "send" and isinstance(payload, list) and len(payload) > 0 and payload[0] == "ainakan:rpc":
             request_id = payload[1]
             operation = payload[2]
             params = payload[3:]
@@ -569,14 +569,14 @@ SessionDetachedCallback = Callable[
         Literal[
             "application-requested", "process-replaced", "process-terminated", "connection-terminated", "device-lost"
         ],
-        Optional[_frida.Crash],
+        Optional[_ainakan.Crash],
     ],
     None,
 ]
 
 
 class Session:
-    def __init__(self, impl: _frida.Session) -> None:
+    def __init__(self, impl: _ainakan.Session) -> None:
         self._impl = impl
 
     def __repr__(self) -> str:
@@ -667,7 +667,7 @@ class Session:
 
     @cancellable
     def setup_peer_connection(
-        self, stun_server: Optional[str] = None, relays: Optional[Sequence[_frida.Relay]] = None
+        self, stun_server: Optional[str] = None, relays: Optional[Sequence[_ainakan.Relay]] = None
     ) -> None:
         """
         Set up a peer connection with the target process
@@ -733,7 +733,7 @@ BusMessageCallback = Callable[[Mapping[Any, Any], Optional[bytes]], None]
 
 
 class Bus:
-    def __init__(self, impl: _frida.Bus) -> None:
+    def __init__(self, impl: _ainakan.Bus) -> None:
         self._impl = impl
         self._on_message_callbacks: List[Callable[..., Any]] = []
 
@@ -810,7 +810,7 @@ ServiceMessageCallback = Callable[[Any], None]
 
 
 class Service:
-    def __init__(self, impl: _frida.Service) -> None:
+    def __init__(self, impl: _ainakan.Service) -> None:
         self._impl = impl
 
     @cancellable
@@ -869,11 +869,11 @@ class Service:
         self._impl.off(signal, callback)
 
 
-DeviceSpawnAddedCallback = Callable[[_frida.Spawn], None]
-DeviceSpawnRemovedCallback = Callable[[_frida.Spawn], None]
-DeviceChildAddedCallback = Callable[[_frida.Child], None]
-DeviceChildRemovedCallback = Callable[[_frida.Child], None]
-DeviceProcessCrashedCallback = Callable[[_frida.Crash], None]
+DeviceSpawnAddedCallback = Callable[[_ainakan.Spawn], None]
+DeviceSpawnRemovedCallback = Callable[[_ainakan.Spawn], None]
+DeviceChildAddedCallback = Callable[[_ainakan.Child], None]
+DeviceChildRemovedCallback = Callable[[_ainakan.Child], None]
+DeviceProcessCrashedCallback = Callable[[_ainakan.Crash], None]
 DeviceOutputCallback = Callable[[int, int, bytes], None]
 DeviceUninjectedCallback = Callable[[int], None]
 DeviceLostCallback = Callable[[], None]
@@ -881,10 +881,10 @@ DeviceLostCallback = Callable[[], None]
 
 class Device:
     """
-    Represents a device that Frida connects to
+    Represents a device that Ainakan connects to
     """
 
-    def __init__(self, device: _frida.Device) -> None:
+    def __init__(self, device: _ainakan.Device) -> None:
         assert device.bus is not None
         self.id = device.id
         self.name = device.name
@@ -914,7 +914,7 @@ class Device:
         return self._impl.query_system_parameters()
 
     @cancellable
-    def get_frontmost_application(self, scope: Optional[str] = None) -> Optional[_frida.Application]:
+    def get_frontmost_application(self, scope: Optional[str] = None) -> Optional[_ainakan.Application]:
         """
         Get details about the frontmost application
         """
@@ -926,7 +926,7 @@ class Device:
     @cancellable
     def enumerate_applications(
         self, identifiers: Optional[Sequence[str]] = None, scope: Optional[str] = None
-    ) -> List[_frida.Application]:
+    ) -> List[_ainakan.Application]:
         """
         Enumerate applications
         """
@@ -938,7 +938,7 @@ class Device:
     @cancellable
     def enumerate_processes(
         self, pids: Optional[Sequence[int]] = None, scope: Optional[str] = None
-    ) -> List[_frida.Process]:
+    ) -> List[_ainakan.Process]:
         """
         Enumerate processes
         """
@@ -948,7 +948,7 @@ class Device:
         return self._impl.enumerate_processes(**kwargs)  # type: ignore
 
     @cancellable
-    def get_process(self, process_name: str) -> _frida.Process:
+    def get_process(self, process_name: str) -> _ainakan.Process:
         """
         Get the process with the given name
         :raises ProcessNotFoundError: if the process was not found or there were more than one process with the given name
@@ -964,9 +964,9 @@ class Device:
             return matching[0]
         elif len(matching) > 1:
             matches_list = ", ".join([f"{process.name} (pid: {process.pid})" for process in matching])
-            raise _frida.ProcessNotFoundError(f"ambiguous name; it matches: {matches_list}")
+            raise _ainakan.ProcessNotFoundError(f"ambiguous name; it matches: {matches_list}")
         else:
-            raise _frida.ProcessNotFoundError(f"unable to find process with name '{process_name}'")
+            raise _ainakan.ProcessNotFoundError(f"unable to find process with name '{process_name}'")
 
     @cancellable
     def enable_spawn_gating(self) -> None:
@@ -985,7 +985,7 @@ class Device:
         self._impl.disable_spawn_gating()
 
     @cancellable
-    def enumerate_pending_spawn(self) -> List[_frida.Spawn]:
+    def enumerate_pending_spawn(self) -> List[_ainakan.Spawn]:
         """
         Enumerate pending spawn
         """
@@ -993,7 +993,7 @@ class Device:
         return self._impl.enumerate_pending_spawn()
 
     @cancellable
-    def enumerate_pending_children(self) -> List[_frida.Child]:
+    def enumerate_pending_children(self) -> List[_ainakan.Child]:
         """
         Enumerate pending children
         """
@@ -1195,13 +1195,13 @@ class Device:
             return target
 
 
-DeviceManagerAddedCallback = Callable[[_frida.Device], None]
-DeviceManagerRemovedCallback = Callable[[_frida.Device], None]
+DeviceManagerAddedCallback = Callable[[_ainakan.Device], None]
+DeviceManagerRemovedCallback = Callable[[_ainakan.Device], None]
 DeviceManagerChangedCallback = Callable[[], None]
 
 
 class DeviceManager:
-    def __init__(self, impl: _frida.DeviceManager) -> None:
+    def __init__(self, impl: _ainakan.DeviceManager) -> None:
         self._impl = impl
 
     def __repr__(self) -> str:
@@ -1356,11 +1356,11 @@ class EndpointParameters:
             else:
                 raise ValueError("invalid authentication scheme")
 
-        self._impl = _frida.EndpointParameters(**kwargs)
+        self._impl = _ainakan.EndpointParameters(**kwargs)
 
 
-PortalServiceNodeJoinedCallback = Callable[[int, _frida.Application], None]
-PortalServiceNodeLeftCallback = Callable[[int, _frida.Application], None]
+PortalServiceNodeJoinedCallback = Callable[[int, _ainakan.Application], None]
+PortalServiceNodeLeftCallback = Callable[[int, _ainakan.Application], None]
 PortalServiceNodeConnectedCallback = Callable[[int, Tuple[str, int]], None]
 PortalServiceNodeDisconnectedCallback = Callable[[int, Tuple[str, int]], None]
 PortalServiceControllerConnectedCallback = Callable[[int, Tuple[str, int]], None]
@@ -1379,7 +1379,7 @@ class PortalService:
         args = [cluster_params._impl]
         if control_params is not None:
             args.append(control_params._impl)
-        impl = _frida.PortalService(*args)
+        impl = _ainakan.PortalService(*args)
 
         self.device = impl.device
         self._impl = impl
@@ -1557,7 +1557,7 @@ CompilerDiagnosticsCallback = Callable[[List[CompilerDiagnostic]], None]
 
 class Compiler:
     def __init__(self) -> None:
-        self._impl = _frida.Compiler()
+        self._impl = _ainakan.Compiler()
 
     def __repr__(self) -> str:
         return repr(self._impl)
@@ -1675,7 +1675,7 @@ PackageRole = Literal["runtime", "development", "optional", "peer"]
 
 class PackageManager:
     def __init__(self) -> None:
-        self._impl = _frida.PackageManager()
+        self._impl = _ainakan.PackageManager()
 
     def __repr__(self) -> str:
         return repr(self._impl)
@@ -1694,7 +1694,7 @@ class PackageManager:
         query: str,
         offset: Optional[int] = None,
         limit: Optional[int] = None,
-    ) -> _frida.PackageSearchResult:
+    ) -> _ainakan.PackageSearchResult:
         kwargs = {
             "offset": offset,
             "limit": limit,
@@ -1709,7 +1709,7 @@ class PackageManager:
         role: Optional[PackageRole] = None,
         specs: Optional[Sequence[str]] = None,
         omits: Optional[Sequence[PackageRole]] = None,
-    ) -> _frida.PackageInstallResult:
+    ) -> _ainakan.PackageInstallResult:
         kwargs: Dict[str, Any] = {
             "project_root": project_root,
             "role": role,
@@ -1795,7 +1795,7 @@ class Cancellable:
         return CancellablePollFD(self._impl)
 
     @classmethod
-    def get_current(cls) -> _frida.Cancellable:
+    def get_current(cls) -> _ainakan.Cancellable:
         """
         Get the top cancellable from the stack
         """

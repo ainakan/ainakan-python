@@ -1,9 +1,9 @@
 include meson.build
-include frida/meson.build
-include frida/_frida/extension.c
-include frida/_frida/extension.version
-include frida/_frida/meson.build
-include subprojects/frida-core.wrap
+include ainakan/meson.build
+include ainakan/_ainakan/extension.c
+include ainakan/_ainakan/extension.version
+include ainakan/_ainakan/meson.build
+include subprojects/ainakan-core.wrap
 
 include BSDmakefile
 include Makefile

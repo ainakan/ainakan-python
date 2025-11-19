@@ -1,4 +1,4 @@
-import frida
+import ainakan
 
-device = frida.get_usb_device()
+device = ainakan.get_usb_device()
 device.unpair()

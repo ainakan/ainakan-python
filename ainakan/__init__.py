@@ -1,46 +1,46 @@
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 try:
-    from . import _frida
+    from . import _ainakan
 except Exception as ex:
     print("")
     print("***")
     if str(ex).startswith("No module named "):
-        print("Frida native extension not found")
+        print("Ainakan native extension not found")
         print("Please check your PYTHONPATH.")
     else:
-        print(f"Failed to load the Frida native extension: {ex}")
+        print(f"Failed to load the Ainakan native extension: {ex}")
         print("Please ensure that the extension was compiled correctly")
     print("***")
     print("")
     raise ex
 from . import core
 
-__version__: str = _frida.__version__
+__version__: str = _ainakan.__version__
 
 get_device_manager = core.get_device_manager
-Relay = _frida.Relay
+Relay = _ainakan.Relay
 PortalService = core.PortalService
 EndpointParameters = core.EndpointParameters
 Compiler = core.Compiler
 PackageManager = core.PackageManager
-FileMonitor = _frida.FileMonitor
+FileMonitor = _ainakan.FileMonitor
 Cancellable = core.Cancellable
 
-ServerNotRunningError = _frida.ServerNotRunningError
-ExecutableNotFoundError = _frida.ExecutableNotFoundError
-ExecutableNotSupportedError = _frida.ExecutableNotSupportedError
-ProcessNotFoundError = _frida.ProcessNotFoundError
-ProcessNotRespondingError = _frida.ProcessNotRespondingError
-InvalidArgumentError = _frida.InvalidArgumentError
-InvalidOperationError = _frida.InvalidOperationError
-PermissionDeniedError = _frida.PermissionDeniedError
-AddressInUseError = _frida.AddressInUseError
-TimedOutError = _frida.TimedOutError
-NotSupportedError = _frida.NotSupportedError
-ProtocolError = _frida.ProtocolError
-TransportError = _frida.TransportError
-OperationCancelledError = _frida.OperationCancelledError
+ServerNotRunningError = _ainakan.ServerNotRunningError
+ExecutableNotFoundError = _ainakan.ExecutableNotFoundError
+ExecutableNotSupportedError = _ainakan.ExecutableNotSupportedError
+ProcessNotFoundError = _ainakan.ProcessNotFoundError
+ProcessNotRespondingError = _ainakan.ProcessNotRespondingError
+InvalidArgumentError = _ainakan.InvalidArgumentError
+InvalidOperationError = _ainakan.InvalidOperationError
+PermissionDeniedError = _ainakan.PermissionDeniedError
+AddressInUseError = _ainakan.AddressInUseError
+TimedOutError = _ainakan.TimedOutError
+NotSupportedError = _ainakan.NotSupportedError
+ProtocolError = _ainakan.ProtocolError
+TransportError = _ainakan.TransportError
+OperationCancelledError = _ainakan.OperationCancelledError
 
 
 def query_system_parameters() -> Dict[str, Any]:

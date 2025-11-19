@@ -1,8 +1,8 @@
 import pprint
 
-import frida
+import ainakan
 
-device = frida.get_usb_device()
+device = ainakan.get_usb_device()
 
 appservice = device.open_service("xpc:com.apple.coredevice.appservice")
 response = appservice.request(

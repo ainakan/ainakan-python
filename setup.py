@@ -11,23 +11,23 @@ from setuptools.command.build_ext import build_ext
 from setuptools.extension import Extension
 
 SOURCE_ROOT = Path(__file__).resolve().parent
-FRIDA_EXTENSION = os.environ.get("FRIDA_EXTENSION", None)
+AINAKAN_EXTENSION = os.environ.get("AINAKAN_EXTENSION", None)
 
 
 def main():
     setup(
-        name="frida",
+        name="ainakan",
         version=detect_version(),
         description="Dynamic instrumentation toolkit for developers, reverse-engineers, and security researchers",
         long_description=compute_long_description(),
         long_description_content_type="text/markdown",
-        author="Frida Developers",
-        author_email="oleavr@frida.re",
-        url="https://frida.re",
+        author="Ainakan Developers",
+        author_email="oleavr@ainakan.re",
+        url="https://ainakan.re",
         install_requires=["typing_extensions; python_version<'3.11'"],
         python_requires=">=3.7",
         license="wxWindows Library Licence, Version 3.1",
-        keywords="frida debugger dynamic instrumentation inject javascript windows macos linux ios iphone ipad android qnx",
+        keywords="ainakan debugger dynamic instrumentation inject javascript windows macos linux ios iphone ipad android qnx",
         classifiers=[
             "Development Status :: 5 - Production/Stable",
             "Environment :: Console",
@@ -50,16 +50,16 @@ def main():
             "Topic :: Software Development :: Debuggers",
             "Topic :: Software Development :: Libraries :: Python Modules",
         ],
-        packages=["frida", "frida._frida"],
-        package_data={"frida": ["py.typed"], "frida._frida": ["py.typed", "__init__.pyi"]},
+        packages=["ainakan", "ainakan._ainakan"],
+        package_data={"ainakan": ["py.typed"], "ainakan._ainakan": ["py.typed", "__init__.pyi"]},
         ext_modules=[
             Extension(
-                name="frida._frida",
-                sources=["frida/_frida/extension.c"],
+                name="ainakan._ainakan",
+                sources=["ainakan/_ainakan/extension.c"],
                 py_limited_api=True,
             )
         ],
-        cmdclass={"build_ext": FridaPrebuiltExt if FRIDA_EXTENSION is not None else FridaDemandBuiltExt},
+        cmdclass={"build_ext": AinakanPrebuiltExt if AINAKAN_EXTENSION is not None else AinakanDemandBuiltExt},
         zip_safe=False,
     )
 
@@ -73,14 +73,14 @@ def detect_version() -> str:
         ][0].strip()
         return version_line[9:]
 
-    version = os.environ.get("FRIDA_VERSION")
+    version = os.environ.get("AINAKAN_VERSION")
     if version is not None:
         return version
 
     releng_location = next(enumerate_releng_locations(), None)
     if releng_location is not None:
         sys.path.insert(0, str(releng_location.parent))
-        from releng.frida_version import detect
+        from releng.ainakan_version import detect
 
         return detect(SOURCE_ROOT).name.replace("-dev.", ".dev")
 
@@ -104,22 +104,22 @@ def enumerate_releng_locations() -> Iterator[Path]:
 
 
 def releng_location_exists(location: Path) -> bool:
-    return (location / "frida_version.py").exists()
+    return (location / "ainakan_version.py").exists()
 
 
-class FridaPrebuiltExt(build_ext):
+class AinakanPrebuiltExt(build_ext):
     def build_extension(self, ext):
         target = self.get_ext_fullpath(ext.name)
         Path(target).parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(FRIDA_EXTENSION, target)
+        shutil.copy(AINAKAN_EXTENSION, target)
 
 
-class FridaDemandBuiltExt(build_ext):
+class AinakanDemandBuiltExt(build_ext):
     def build_extension(self, ext):
         make = SOURCE_ROOT / "make.bat" if platform.system() == "Windows" else "make"
         subprocess.run([make], check=True)
 
-        outputs = [entry for entry in (SOURCE_ROOT / "build" / "frida" / "_frida").glob("_frida.*") if entry.is_file()]
+        outputs = [entry for entry in (SOURCE_ROOT / "build" / "ainakan" / "_ainakan").glob("_ainakan.*") if entry.is_file()]
         assert len(outputs) == 1
         target = self.get_ext_fullpath(ext.name)
         Path(target).parent.mkdir(parents=True, exist_ok=True)
